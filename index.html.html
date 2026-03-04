@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>400m Training Pace Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .input-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .results-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+        }
+        
+        .results-card.show {
+            display: block;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .results-header h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .results-header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .pace-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .pace-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #5568d3;
+        }
+        
+        .pace-table td {
+            padding: 12px 10px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .pace-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .pace-table tr:hover {
+            background-color: #e8f4f8;
+        }
+        
+        .effort-label {
+            font-weight: 600;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .info-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            color: #34495e;
+            line-height: 1.6;
+        }
+        
+        .quick-select {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .quick-select-btn {
+            padding: 8px 16px;
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+        
+        .quick-select-btn:hover {
+            background-color: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .pace-table {
+                font-size: 0.9em;
+            }
+            
+            .pace-table th,
+            .pace-table td {
+                padding: 8px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🏃 400m Training Pace Calculator</h1>
+            <p>Get personalized training paces based on your goal time</p>
+        </div>
+        
+        <div class="input-card">
+            <div class="input-group">
+                <label for="goalTime">Your 400m Goal Time (seconds)</label>
+                <input type="number" id="goalTime" placeholder="e.g., 54" min="40" max="90" step="0.1">
+                <div class="quick-select">
+                    <button class="quick-select-btn" onclick="setGoalTime(48)">48s</button>
+                    <button class="quick-select-btn" onclick="setGoalTime(52)">52s</button>
+                    <button class="quick-select-btn" onclick="setGoalTime(54)">54s</button>
+                    <button class="quick-select-btn" onclick="setGoalTime(56)">56s</button>
+                    <button class="quick-select-btn" onclick="setGoalTime(60)">60s</button>
+                    <button class="quick-select-btn" onclick="setGoalTime(65)">65s</button>
+                </div>
+            </div>
+            
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="distance">Training Distance</label>
+                    <select id="distance">
+                        <option value="100">100 meters</option>
+                        <option value="150">150 meters</option>
+                        <option value="200" selected>200 meters</option>
+                        <option value="250">250 meters</option>
+                        <option value="300">300 meters</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="effortFilter">Show Effort Levels</label>
+                    <select id="effortFilter">
+                        <option value="all">All Efforts</option>
+                        <option value="recovery">Recovery (70-75%)</option>
+                        <option value="tempo">Tempo (80-85%)</option>
+                        <option value="speed">Speed Work (90-95%)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculatePaces()">Calculate My Training Paces</button>
+        </div>
+        
+        <div class="results-card" id="results">
+            <div class="results-header">
+                <h2 id="resultsTitle">Your Training Paces</h2>
+                <p id="resultsSubtitle"></p>
+            </div>
+            
+            <table class="pace-table">
+                <thead>
+                    <tr>
+                        <th>Effort Level</th>
+                        <th>Pace</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody id="paceTableBody">
+                </tbody>
+            </table>
+            
+            <div class="info-box">
+                <h3>How to Use These Paces:</h3>
+                <p id="trainingTip"></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        var effortLevels = [
+            { effort: 0.70, label: '70% Effort', purpose: 'Recovery runs, easy pace', category: 'recovery' },
+            { effort: 0.75, label: '75% Effort', purpose: 'Warm-up, building fitness', category: 'recovery' },
+            { effort: 0.80, label: '80% Effort', purpose: 'Tempo pace, aerobic development', category: 'tempo' },
+            { effort: 0.85, label: '85% Effort', purpose: 'Threshold pace, moderate intensity', category: 'tempo' },
+            { effort: 0.90, label: '90% Effort', purpose: 'Race pace training, high intensity', category: 'speed' },
+            { effort: 0.95, label: '95% Effort', purpose: 'Near-maximum effort, speed work', category: 'speed' }
+        ];
+        
+        var trainingTips = {
+            '100': 'Use 100m repeats for speed development and acceleration work. Rest 1-3 minutes between reps depending on effort level.',
+            '150': 'Perfect for building speed endurance. These are great for developing the transition from acceleration to maximum velocity.',
+            '200': '200m repeats are excellent for race-specific training. Focus on maintaining form throughout the entire distance.',
+            '250': 'These longer intervals build both speed and endurance. Great for developing the ability to hold pace under fatigue.',
+            '300': '300m repeats simulate the final 3/4 of your race. Excellent for building mental toughness and finishing speed.'
+        };
+        
+        function setGoalTime(time) {
+            document.getElementById('goalTime').value = time;
+        }
+        
+        function calculatePace(goalTime, distance, effort) {
+            var base100m = (goalTime / 4) * 0.92;
+            var timePer100m = base100m / effort;
+            return timePer100m * (distance / 100);
+        }
+        
+        function formatTime(seconds) {
+            return seconds.toFixed(1) + 's';
+        }
+        
+        function calculatePaces() {
+            try {
+                var goalTime = parseFloat(document.getElementById('goalTime').value);
+                var distance = parseInt(document.getElementById('distance').value);
+                var effortFilter = document.getElementById('effortFilter').value;
+                
+                if (!goalTime || goalTime < 40 || goalTime > 90) {
+                    alert('Please enter a valid goal time between 40 and 90 seconds');
+                    return;
+                }
+                
+                document.getElementById('resultsTitle').textContent = 'Training Paces for ' + distance + 'm Repeats';
+                document.getElementById('resultsSubtitle').textContent = 'Based on ' + goalTime + 's 400m goal';
+                document.getElementById('trainingTip').textContent = trainingTips[distance];
+                
+                var tbody = document.getElementById('paceTableBody');
+                tbody.innerHTML = '';
+                
+                for (var i = 0; i < effortLevels.length; i++) {
+                    var level = effortLevels[i];
+                    
+                    if (effortFilter !== 'all' && level.category !== effortFilter) {
+                        continue;
+                    }
+                    
+                    var pace = calculatePace(goalTime, distance, level.effort);
+                    
+                    var row = document.createElement('tr');
+                    row.innerHTML = '<td class="effort-label">' + level.label + '</td>' +
+                                  '<td style="font-weight: bold; font-size: 1.2em; color: #667eea;">' + formatTime(pace) + '</td>' +
+                                  '<td>' + level.purpose + '</td>';
+                    tbody.appendChild(row);
+                }
+                
+                var resultsDiv = document.getElementById('results');
+                resultsDiv.className = 'results-card show';
+                
+                setTimeout(function() {
+                    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } catch (error) {
+                alert('Error calculating paces. Please try again.');
+                console.error(error);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            var goalInput = document.getElementById('goalTime');
+            if (goalInput) {
+                goalInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter' || event.keyCode === 13) {
+                        calculatePaces();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
